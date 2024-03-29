@@ -1,0 +1,16 @@
+# 默认注释了源码仓库，如有需要可自行取消注释
+deb [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+deb-src [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+
+deb [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse
+deb-src [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse
+
+deb [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+deb-src [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+
+deb [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+deb-src [trusted=yes] https://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+
+## Not recommended
+# deb https://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse
+# deb-src https://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse
