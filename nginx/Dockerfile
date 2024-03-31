@@ -1,15 +1,18 @@
 FROM ubuntu:latest as builder
 WORKDIR /data
-RUN apt-get update  \
-    &&tar -zxvf nginx-1.25.4.tar.gz  \
-    &&apt install gcc make pcre2-utils libpcre2-dev zlib1g-dev \
-    &&./configure --prefix=/data/nginx-bin \
-    &&make&&make install \
-    &&rm -rf nginx-1.25.4
+ADD ./nginx-1.25.4.tar.gz /data
+RUN apt update  \
+    && apt -y install gcc make pcre2-utils libpcre2-dev zlib1g-dev \
+    && cd ./nginx-1.25.4 \
+    && ./configure --prefix=/data/nginx-bin \
+    --with-debug \
+    && make \
+    && make install
 
-FROM alpine:latest
-WORKDIR /app
-COPY --from=builder /data/nginx-bin /app/
+FROM ubuntu:latest
+WORKDIR /data
+COPY --from=builder /data/nginx-bin /data/nginx-bin
+RUN echo net.ipv4.tcp_syncookies = 0 >>/etc/sysctl.conf \
+    &&sysctl -p
 EXPOSE 80
-CMD ["/data/nginx-bin/sbin/nginx" "-g" "daemon off;"]
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD /data/nginx-bin/sbin/nginx -g "daemon off;"

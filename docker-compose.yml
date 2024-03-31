@@ -1,0 +1,16 @@
+services:
+  web:
+    build: ./nginx
+    ports:
+      - 8000:80
+    volumes:
+      - ./html:/data/nginx-bin/html
+      - ./nginx.conf:/data/nginx-bin/conf/nginx.conf
+    links:
+      - "php:php"
+  php:
+    image: php:fpm-alpine
+    volumes:
+      - ./html:/data/nginx-bin/html
+
+  
