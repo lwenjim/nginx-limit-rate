@@ -14,5 +14,6 @@ WORKDIR /data
 COPY --from=builder /data/nginx-bin /data/nginx-bin
 RUN echo net.ipv4.tcp_syncookies = 0 >>/etc/sysctl.conf \
     &&sysctl -p
+ADD html /data/nginx-bin/html
 EXPOSE 80
 CMD /data/nginx-bin/sbin/nginx -g "daemon off;"
