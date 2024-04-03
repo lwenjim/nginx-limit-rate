@@ -1,37 +1,31 @@
 # nginx-limit-rate
 
-### 测试NGINX限流模块
-#### 构建镜像
-* 1.添加Nginx源码包到docker
-* 2.更新数据源,并且安装依赖的开发包
-* 3.编译源码包
-* 4.安装和部署
-
-### 安装
+## 安装环境
+#### docker-compose 安装
 ```
-git clone git@github.com:lwenjim/nginx-limit-rate.git
-cd nginx-limit-rate
-docker-compose up -d
-ab -n 8000 -c 60 localhost:8000/index.php
+    cd nginx-limit-rate
+    docker-compose up -d
 ```
-### 项目概括
-通过web服务器对客户端流量进行限制,以达到保护后端服务器和数据库的目的,
-
-1.打包Nginx镜像
+#### k8s 安装
 ```
-// 安装 ngx_http_limit_req_module 模块
-// 拷贝 default.conf /etc/nginx/conf.d/default.conf 位置
+    kubectl apply -f nginx-deployment.yaml
 ```
 
-1.安装以docker的形式运行Nginx服务, 
-2.安装Nginx限流模块(ngx_http_limit_req_module)
-3.添加限流模块的配置
+## ab测试
+```
+    ab -n 10 -c 10 127.0.0.1/index.html
+    ab -n 10 -c 10 127.0.0.1/index.php
+
+    // 修改 docker-compose-nginx.conf 速率
+    limit_req_zone $binary_remote_addr zone=mylimit:10m rate=2r/s;
+    limit_req zone=mylimit burst=5;
+```
+## 生成镜像
+```
+    docker build -t nginx:test -f nginx-Dockerfile .
+    docker image tag nginx:test lwenjim/nginx:test
+    
+    docker build -t php:test -f php-Dockerfile .
+    docker image tag php:test lwenjim/php:test
 
 ```
-
-```
-4.
-
-
-
-灵感来自于[参考](https://blog.csdn.net/IT_ZRS/article/details/108805751)
