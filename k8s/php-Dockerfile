@@ -1,0 +1,3 @@
+FROM php:fpm-alpine
+WORKDIR /data
+ADD html /data/nginx-bin/html
