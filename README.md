@@ -13,7 +13,7 @@ git clone git@github.com:lwenjim/nginx-limit-rate.git
 cd nginx-limit-rate
 docker-compose up -d
 ab -n 8000 -c 60 localhost:8000/index.php
-
+```
 ### 项目概括
 通过web服务器对客户端流量进行限制,以达到保护后端服务器和数据库的目的,
 

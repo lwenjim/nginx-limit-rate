@@ -4,7 +4,7 @@ metadata:
   name: nginx-configmap
   namespace: default
 data:
-  nginx.conf: |
+  nginx.conf: |-
     worker_processes 1; 
     events {
         worker_connections 1024;
@@ -17,9 +17,9 @@ data:
         server {
             listen 80;
             server_name localhost;
-            access_log /data/nginx-bin/logs/access.log combined;
+            access_log /var/log/nginx/access.log combined;
             limit_req zone=one burst=20 nodelay;
-            root html;
+            root /usr/share/nginx/html;
             location / {
                 index index.html index.htm;
             }
@@ -27,6 +27,9 @@ data:
                 fastcgi_pass localhost:9000;
                 fastcgi_index index.php;
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 include fastcgi_params;
             }
         }
@@ -57,7 +60,7 @@ spec:
         - name: nginx
           image: lwenjim/nginx:test
           volumeMounts:
-            - mountPath: /data/nginx-bin/conf/nginx.conf
+            - mountPath: /etc/nginx/nginx.conf
               name: nginx-config-volumns
               subPath: nginx.conf
           ports:
