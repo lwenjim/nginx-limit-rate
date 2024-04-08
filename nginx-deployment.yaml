@@ -21,7 +21,7 @@ data:
             limit_req zone=one burst=20 nodelay;
             root /usr/share/nginx/html;
             location / {
-                index index.html index.htm;
+                index index.html index.htm index.php;
             }
             location ~ \.php$ {
                 fastcgi_pass localhost:9000;
@@ -58,7 +58,7 @@ spec:
             name: nginx-configmap
       containers:
         - name: nginx
-          image: lwenjim/nginx:test
+          image: docker.io/lwenjim/nginx:test
           volumeMounts:
             - mountPath: /etc/nginx/nginx.conf
               name: nginx-config-volumns
@@ -66,7 +66,7 @@ spec:
           ports:
             - containerPort: 80
         - name: php
-          image: lwenjim/php:test
+          image: docker.io/lwenjim/php:test
           ports:
             - containerPort: 9000
 ---
