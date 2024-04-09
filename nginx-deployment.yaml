@@ -24,13 +24,21 @@ data:
                 index index.html index.htm index.php;
             }
             location ~ \.php$ {
-                fastcgi_pass localhost:9000;
+                fastcgi_pass php-service:9000;
                 fastcgi_index index.php;
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                 fastcgi_param PATH_INFO $fastcgi_path_info;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 include fastcgi_params;
+            }
+            location /golang/ {
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-NginX-Proxy true;
+                proxy_redirect off;
+                proxy_pass http://golang-service:8080/;
             }
         }
     }
@@ -52,37 +60,176 @@ spec:
         app: nginx
     spec:
       volumes:
-        - name: nginx-config-volumns
+        - name: nginx-config-volumn
           configMap:
             defaultMode: 420
             name: nginx-configmap
+        - name: html
+          hostPath:
+            path: /Users/jim/Workdata/nginx-limit-rate/html
+            type: Directory
       containers:
         - name: nginx
           image: docker.io/lwenjim/nginx:test
           volumeMounts:
             - mountPath: /etc/nginx/nginx.conf
-              name: nginx-config-volumns
+              name: nginx-config-volumn
               subPath: nginx.conf
+            - mountPath: /usr/share/nginx/html
+              name: html
           ports:
             - containerPort: 80
-        - name: php
-          image: docker.io/lwenjim/php:test
-          ports:
-            - containerPort: 9000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: nginx
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-deployment
+  labels:
+    app: golang
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang
+  template:
+    metadata:
+      labels:
+        app: golang
+    spec:
+      containers:
+        - name: golang
+          image: docker.io/lwenjim/golang:test
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-service
+spec:
+  type: ClusterIP
+  selector:
+    app: golang
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-deployment
+  labels:
+    app: php
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+  template:
+    metadata:
+      labels:
+        app: php
+    spec:
+      volumes:
+        - name: html
+          hostPath:
+            path: /Users/jim/Workdata/nginx-limit-rate/html
+            type: Directory
+      containers:
+        - name: php
+          image: docker.io/lwenjim/php:test
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: html
+          ports:
+            - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-service
+spec:
+  type: ClusterIP
+  selector:
+    app: php
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-configmap
+  namespace: default
+data:
+  redis.conf: |-
+    daemonize no
+    protected-mode yes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      volumes:
+        - name: data
+          hostPath:
+            path: /Users/jim/Workdata/nginx-limit-rate/data/redis
+            type: Directory
+        - name: redis-config-volumn
+          configMap:
+            defaultMode: 420
+            name: redis-configmap
+      containers:
+        - name: redis
+          image: docker.io/lwenjim/redis:test
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /usr/local/etc/redis/redis.conf
+              name: redis-config-volumn
+              subPath: redis.conf
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
 ---
 kind: Ingress
 apiVersion: networking.k8s.io/v1

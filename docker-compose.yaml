@@ -17,6 +17,10 @@ services:
           - ./html:/usr/share/nginx/html
         networks:
           - code-network
+    golang:
+        image: lwenjim/golang:test
+        networks:
+          - code-network
 networks:
     code-network:
         driver: bridge

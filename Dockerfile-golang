@@ -1,0 +1,9 @@
+FROM golang:alpine AS BUILDER
+WORKDIR /usr/src/app
+COPY go.mod go.sum ./
+COPY main.go .
+RUN go mod download && go mod verify \
+    && go build -ldflags="-s -w" -v -o /usr/local/bin/app .
+FROM scratch
+COPY --from=BUILDER /usr/local/bin/app /usr/local/bin/app
+CMD ["app"]
