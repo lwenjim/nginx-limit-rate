@@ -50,7 +50,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: nginx
@@ -64,10 +64,6 @@ spec:
           configMap:
             defaultMode: 420
             name: nginx-configmap
-        - name: html
-          hostPath:
-            path: /Users/jim/Workdata/nginx-limit-rate/html
-            type: Directory
       containers:
         - name: nginx
           image: docker.io/lwenjim/nginx:test
@@ -75,8 +71,6 @@ spec:
             - mountPath: /etc/nginx/nginx.conf
               name: nginx-config-volumn
               subPath: nginx.conf
-            - mountPath: /usr/share/nginx/html
-              name: html
           ports:
             - containerPort: 80
 ---
@@ -100,7 +94,7 @@ metadata:
   labels:
     app: golang
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: golang
@@ -135,7 +129,7 @@ metadata:
   labels:
     app: php
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: php
@@ -144,17 +138,9 @@ spec:
       labels:
         app: php
     spec:
-      volumes:
-        - name: html
-          hostPath:
-            path: /Users/jim/Workdata/nginx-limit-rate/html
-            type: Directory
       containers:
         - name: php
           image: docker.io/lwenjim/php:test
-          volumeMounts:
-            - mountPath: /usr/share/nginx/html
-              name: html
           ports:
             - containerPort: 9000
 ---
@@ -188,7 +174,7 @@ metadata:
   labels:
     app: redis
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: redis
@@ -198,10 +184,6 @@ spec:
         app: redis
     spec:
       volumes:
-        - name: data
-          hostPath:
-            path: /Users/jim/Workdata/nginx-limit-rate/data/redis
-            type: Directory
         - name: redis-config-volumn
           configMap:
             defaultMode: 420
@@ -210,8 +192,6 @@ spec:
         - name: redis
           image: docker.io/lwenjim/redis:test
           volumeMounts:
-            - mountPath: /data
-              name: data
             - mountPath: /usr/local/etc/redis/redis.conf
               name: redis-config-volumn
               subPath: redis.conf
